@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <h1 class="title">lista czy cos</h1>
+    </header>
+
+    <div class="clock" id="clock">00:00:00</div>
+
+    <div class="dark-mode-toggle" onclick="toggleDarkMode()">
+        <span>Tryb ciemny</span>🌙
+    </div>
+
+    <button class="project-info-button" onclick="showProjectInfo()">O projekcie</button>
+
+    <div id="projectInfo" class="project-info-container">
+        <div class="project-info-header">
+            <h3>O projekcie</h3>
+            <button class="close-project-info" onclick="closeProjectInfo()">X</button>
+        </div>
+        <div class="project-info-content">
+            <div class="text-box">
+                <p>super apka</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="new-list-container">
+            <button class="create-list-btn" onclick="createNewList()">Utwórz nową listę</button>
+        </div>
+        <div class="lists-wrapper"></div>
+        <div id="lists-container"></div>
+    </div>
+
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function updateClock() {
+            const clock = document.getElementById('clock');
+            const now = new Date();
+            clock.innerText = now.toLocaleTimeString();
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function showProjectInfo() {
+            const projectInfoContainer = document.getElementById('projectInfo');
+            projectInfoContainer.classList.add('show');
+        }
+
+        function closeProjectInfo() {
+            const projectInfoContainer = document.getElementById('projectInfo');
+            projectInfoContainer.classList.remove('show');
+        }
+
+        function createNewList() {
+            const listName = prompt('Podaj nazwę listy:');
+            if (!listName) return;
+
+            const listContainer = document.createElement('div');
+            listContainer.classList.add('list-container');
+
+            const listHeader = document.createElement('div');
+            listHeader.classList.add('list-header');
+
+            const listTitle = document.createElement('h3');
+            listTitle.textContent = listName;
+
+            const addButton = document.createElement('button');
+            addButton.classList.add('add-item-btn');
+            addButton.textContent = 'Dodaj przedmiot';
+            addButton.onclick = () => addItemToList(listContainer);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.classList.add('delete-list-btn');
+            deleteButton.textContent = 'Usuń listę';
+            deleteButton.onclick = () => deleteList(listContainer);
+
+            listHeader.appendChild(listTitle);
+            listHeader.appendChild(addButton);
+            listHeader.appendChild(deleteButton);
+
+            const listItems = document.createElement('ul');
+            listContainer.appendChild(listHeader);
+            listContainer.appendChild(listItems);
+
+
+            document.querySelector('.lists-wrapper').appendChild(listContainer);
+
+            saveLists();
+        }
+
+
+        function deleteList(listContainer) {
+            if (confirm('Czy na pewno chcesz usunąć tę listę?')) {
+                listContainer.remove();
+                saveLists();
+            }
+        }
+
+        function addItemToList(listContainer) {
+            const itemText = prompt('Co chcesz dodać do listy?');
+            if (!itemText) return;
+
+            const listItems = listContainer.querySelector('ul');
+
+            const listItem = document.createElement('li');
+            const itemLabel = document.createElement('span');
+            itemLabel.textContent = itemText;
+
+            const checkboxButton = document.createElement('button');
+            checkboxButton.textContent = '✓';
+            checkboxButton.onclick = () => {
+                listItem.classList.toggle('checked');
+                saveLists();
+            };
+
+            const closeButton = document.createElement('button');
+            closeButton.classList.add('close-item-btn');
+            closeButton.textContent = 'X';
+            closeButton.onclick = () => {
+                listItem.remove();
+                saveLists();
+            };
+
+            listItem.appendChild(itemLabel);
+            listItem.appendChild(checkboxButton);
+            listItem.appendChild(closeButton);
+            listItems.appendChild(listItem);
+
+            saveLists();
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            loadLists();
+        });
+
+        function saveLists() {
+            const lists = document.querySelectorAll(".list-container");
+            let data = [];
+
+            lists.forEach(list => {
+                let listName = list.querySelector("h3").innerText;
+                let items = [];
+
+                list.querySelectorAll("li").forEach(item => {
+                    items.push({
+                        text: item.querySelector("span").innerText,
+                        checked: item.classList.contains("checked")
+                    });
+                });
+
+                data.push({ name: listName, items: items });
+            });
+
+            localStorage.setItem("savedLists", JSON.stringify(data));
+            console.log("Zapisano dane:", JSON.stringify(data));
+        }
+
+        function loadLists() {
+            console.log("Ładowanie list...");
+            const savedData = localStorage.getItem("savedLists");
+            console.log("Pobrane dane:", savedData);
+            if (!savedData) return;
+
+            const data = JSON.parse(savedData);
+            data.forEach(listData => {
+                const listContainer = createListElement(listData.name);
+                const ul = listContainer.querySelector("ul");
+
+                listData.items.forEach(itemData => {
+                    const newItem = createListItem(itemData.text);
+                    if (itemData.checked) newItem.classList.add("checked");
+                    ul.appendChild(newItem);
+                });
+            });
+        }
+
+        function createListElement(name) {
+            console.log("Tworzę listę:", name);
+            const mainContainer = document.querySelector(".lists-wrapper");
+            if (!mainContainer) {
+                console.error("Brak kontenera .lists-wrapper!");
+                return;
+            }
+
+            const listContainer = document.createElement("div");
+            listContainer.classList.add("list-container");
+
+            const listHeader = document.createElement("div");
+            listHeader.classList.add("list-header");
+
+            const listTitle = document.createElement("h3");
+            listTitle.textContent = name;
+
+            const addItemBtn = document.createElement("button");
+            addItemBtn.classList.add("add-item-btn");
+            addItemBtn.textContent = "Dodaj element";
+            addItemBtn.addEventListener("click", function () {
+                const itemText = prompt("Dodaj nowy element:");
+                if (itemText) {
+                    const newItem = createListItem(itemText);
+                    listContainer.querySelector("ul").appendChild(newItem);
+                    saveLists();
+                }
+            });
+
+            const deleteListBtn = document.createElement("button");
+            deleteListBtn.classList.add("delete-list-btn");
+            deleteListBtn.textContent = "Usuń listę";
+            deleteListBtn.addEventListener("click", function () {
+                listContainer.remove();
+                saveLists();
+            });
+
+            listHeader.appendChild(listTitle);
+            listHeader.appendChild(addItemBtn);
+            listHeader.appendChild(deleteListBtn);
+
+            const ul = document.createElement("ul");
+
+            listContainer.appendChild(listHeader);
+            listContainer.appendChild(ul);
+            mainContainer.appendChild(listContainer);
+
+            return listContainer;
+        }
+
+        function createListItem(text) {
+            const li = document.createElement("li");
+            li.innerHTML = `<span>${text}</span> <button class="checkbox-btn">✓</button>`;
+
+            const checkboxBtn = li.querySelector(".checkbox-btn");
+            checkboxBtn.addEventListener("click", function () {
+                li.classList.toggle("checked");
+                saveLists();
+            });
+
+            return li;
+        }
+
+    </script>
+</body>
+
+</html>
