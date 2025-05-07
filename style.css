@@ -28,8 +28,33 @@ header {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+.logo {
+	margin:18px;
+	font-size: 0;
+}
+
 .title {
-    color: #fff;
+    color: #FFFCF4;
+	
+}
+
+.hub {
+	color: #000;
+}
+
+.hubbg {
+	background-color: #FFFCF4;
+	border-radius: 10px;
+	padding: 0px 1px 0px 1px;
+}
+
+.title,
+.hub,
+.hubbg{
+	font-family: "Berlin Sans FB", Arial, sans-serif;
+	font-weight: normal;
+	display: inline;
+	font-size: 36px;
 }
 
 .clock {
@@ -309,7 +334,7 @@ body.dark-mode {
 
 ul {
     list-style-type: none;
-    padding: 0; /* ewentualnie 0 0 30 0 */
+    padding: 0; /* ewentualnie 0 0 30 0 ale chuj zobaczy sie */
 }
 
 li {
