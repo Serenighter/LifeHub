@@ -412,3 +412,20 @@ body.dark-mode li.checked {
     background-color: #c0392b;
     transform: scale(1.15);
 }
+
+.notes {
+    position: fixed;
+    top: 10px;
+    left: 140px;
+    background-color: #E0D269;
+    color: #fff;
+    padding: 12px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease-in-out;
+    user-select: none;
+}

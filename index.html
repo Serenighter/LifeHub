@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista</title>
+    <title>LifeHUB - Listy</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -25,7 +25,8 @@
     </div>
 
     <button class="project-info-button" onclick="showProjectInfo()">O projekcie</button>
-
+	<button onclick="location.href='notes.html'" class="notes">Przejdź do notatek</button>
+	
     <div id="projectInfo" class="project-info-container">
         <div class="project-info-header">
             <h3>O projekcie</h3>
@@ -45,6 +46,9 @@
         <div class="lists-wrapper"></div>
         <div id="lists-container"></div>
     </div>
+	
+
+
 
     <script>
         function toggleDarkMode() {
