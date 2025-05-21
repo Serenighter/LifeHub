@@ -34,7 +34,8 @@
         </div>
         <div class="project-info-content">
             <div class="text-box">
-                <p>super apka</p>
+                <p>
+				Witamy w LifeHUB – Twoim nowym, intuicyjnym asystencie do zarządzania codziennymi zadaniami i notatkami. Naszym celem jest stworzenie miejsca, w którym w kilka sekund uporządkujesz to, co najważniejsze: listy zakupów, plany dnia, pomysły na projekty, a nawet szybkie notatki.</p>
             </div>
         </div>
     </div>
@@ -136,22 +137,13 @@
                 saveLists();
             };
 
-            const closeButton = document.createElement('button');
-            closeButton.classList.add('close-item-btn');
-            closeButton.textContent = 'X';
-            closeButton.onclick = () => {
-                listItem.remove();
-                saveLists();
-            };
-
             listItem.appendChild(itemLabel);
             listItem.appendChild(checkboxButton);
-            listItem.appendChild(closeButton);
             listItems.appendChild(listItem);
 
             saveLists();
         }
-
+		
         document.addEventListener("DOMContentLoaded", function () {
             loadLists();
         });
