@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeHUB - Notatki</title>
+	<link rel="stylesheet" href="notes.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-title">
+            <h2>Moje Notatki</h2>
+            <span class="note-count" id="note-count">0</span>
+        </div>
+        <input type="text" class="search-box" id="search-box" placeholder="Szukaj notatek...">
+        <ul class="notes-list" id="notes-list"></ul>
+    </div>
+    <div class="main-content">
+        <div class="note-editor">
+            <div class="header">
+				<div class="logo">
+				<h1 class="title">Life</h1>
+				<div class="hubbg">
+				<h1 class="hub">HUB</h1>
+				</div>
+				</div>
+                <div class="action-buttons">
+					<button onclick="location.href='index.html'" class="list-btn">Przejdź do list</button>
+                    <button id="new-note-btn" class="new-btn">Nowa notatka</button>
+                    <button id="save-btn">Zapisz</button>
+                    <button id="delete-btn" class="delete-btn">Usuń</button>
+                </div>
+            </div>
+            <input type="text" id="note-title" placeholder="Tytuł notatki">
+            <textarea id="note-content" placeholder="Treść notatki..."></textarea>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementy DOM
+            const notesList = document.getElementById('notes-list');
+            const noteTitleInput = document.getElementById('note-title');
+            const noteContentInput = document.getElementById('note-content');
+            const saveBtn = document.getElementById('save-btn');
+            const deleteBtn = document.getElementById('delete-btn');
+            const newNoteBtn = document.getElementById('new-note-btn');
+            const searchBox = document.getElementById('search-box');
+            const noteCountSpan = document.getElementById('note-count');
+            
+            // Stan aplikacji
+            let notes = [];
+            let currentNoteId = null;
+            
+            // Załaduj notatki z localStorage
+            function loadNotes() {
+                const savedNotes = localStorage.getItem('notes');
+                if (savedNotes) {
+                    notes = JSON.parse(savedNotes);
+                    updateNoteCount();
+                    renderNotesList();
+                }
+            }
+            
+            // Zapisz notatki do localStorage
+            function saveNotes() {
+                localStorage.setItem('notes', JSON.stringify(notes));
+                updateNoteCount();
+            }
+            
+            // Aktualizuj licznik notatek
+            function updateNoteCount() {
+                noteCountSpan.textContent = notes.length;
+            }
+            
+            // Renderuj listę notatek
+            function renderNotesList(searchTerm = '') {
+                notesList.innerHTML = '';
+                
+                if (notes.length === 0) {
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'empty-state';
+                    emptyState.textContent = 'Brak notatek. Utwórz swoją pierwszą notatkę!';
+                    notesList.appendChild(emptyState);
+                    return;
+                }
+                
+                const filteredNotes = searchTerm 
+                    ? notes.filter(note => 
+                        note.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                        note.content.toLowerCase().includes(searchTerm.toLowerCase()))
+                    : notes;
+                
+                filteredNotes.forEach(note => {
+                    const noteItem = document.createElement('li');
+                    noteItem.className = 'note-item';
+                    if (note.id === currentNoteId) {
+                        noteItem.classList.add('active');
+                    }
+                    noteItem.textContent = note.title || 'Bez tytułu';
+                    noteItem.dataset.id = note.id;
+                    
+                    noteItem.addEventListener('click', () => {
+                        loadNoteToEditor(note.id);
+                    });
+                    
+                    notesList.appendChild(noteItem);
+                });
+            }
+            
+            // Załaduj notatkę do edytora
+            function loadNoteToEditor(noteId) {
+                currentNoteId = noteId;
+                const note = notes.find(note => note.id === noteId);
+                
+                if (note) {
+                    noteTitleInput.value = note.title;
+                    noteContentInput.value = note.content;
+                    
+                    // Usuń klasę 'active' ze wszystkich notatek
+                    document.querySelectorAll('.note-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    
+                    // Dodaj klasę 'active' do bieżącej notatki
+                    const currentNoteElement = document.querySelector(`.note-item[data-id="${noteId}"]`);
+                    if (currentNoteElement) {
+                        currentNoteElement.classList.add('active');
+                    }
+                }
+            }
+            
+            // Tworzenie nowej notatki
+            function createNewNote() {
+                const newNote = {
+                    id: Date.now().toString(),
+                    title: '',
+                    content: '',
+                    createdAt: new Date().toISOString()
+                };
+                
+                notes.unshift(newNote);
+                saveNotes();
+                renderNotesList();
+                loadNoteToEditor(newNote.id);
+                noteTitleInput.focus();
+            }
+            
+            // Zapisywanie notatki
+            function saveNote() {
+                if (!currentNoteId) {
+                    createNewNote();
+                    return;
+                }
+                
+                const noteIndex = notes.findIndex(note => note.id === currentNoteId);
+                if (noteIndex > -1) {
+                    notes[noteIndex].title = noteTitleInput.value;
+                    notes[noteIndex].content = noteContentInput.value;
+                    notes[noteIndex].updatedAt = new Date().toISOString();
+                    
+                    // Przenieś zaktualizowaną notatkę na początek listy
+                    const updatedNote = notes.splice(noteIndex, 1)[0];
+                    notes.unshift(updatedNote);
+                    
+                    saveNotes();
+                    renderNotesList(searchBox.value);
+                    
+                    // Pokaż wizualne potwierdzenie zapisania
+                    const saveButton = document.getElementById('save-btn');
+                    const originalText = saveButton.textContent;
+                    saveButton.textContent = 'Zapisano!';
+                    saveButton.style.backgroundColor = '#2ecc71';
+                    
+                    setTimeout(() => {
+                        saveButton.textContent = originalText;
+                        saveButton.style.backgroundColor = '';
+                    }, 1000);
+                }
+            }
+            
+            // Usuwanie notatki
+            function deleteNote() {
+                if (!currentNoteId) return;
+                
+                if (confirm('Czy na pewno chcesz usunąć tę notatkę?')) {
+                    notes = notes.filter(note => note.id !== currentNoteId);
+                    saveNotes();
+                    renderNotesList(searchBox.value);
+                    
+                    // Wyczyść edytor
+                    currentNoteId = null;
+                    noteTitleInput.value = '';
+                    noteContentInput.value = '';
+                    
+                    // Jeśli mamy jeszcze jakieś notatki, załaduj pierwszą
+                    if (notes.length > 0) {
+                        loadNoteToEditor(notes[0].id);
+                    }
+                }
+            }
+            
+            // Obsługa wyszukiwania
+            searchBox.addEventListener('input', (e) => {
+                renderNotesList(e.target.value);
+            });
+            
+            // Nasłuchiwanie na kliknięcia przycisków
+            saveBtn.addEventListener('click', saveNote);
+            deleteBtn.addEventListener('click', deleteNote);
+            newNoteBtn.addEventListener('click', createNewNote);
+            
+            // Automatyczne zapisywanie przy wyjściu ze strony
+            window.addEventListener('beforeunload', () => {
+                if (currentNoteId) {
+                    saveNote();
+                }
+            });
+            
+            // Zapisywanie przy naciśnięciu Ctrl+S
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    saveNote();
+                }
+            });
+            
+            // Inicjalizacja aplikacji
+            loadNotes();
+            
+            // Jeśli mamy jakieś notatki, załaduj pierwszą
+            if (notes.length > 0) {
+                loadNoteToEditor(notes[0].id);
+            } else {
+                // Jeśli nie ma żadnych notatek, utwórz przykładową
+                createNewNote();
+            }
+        });
+    </script>
+</body>
+</html>
